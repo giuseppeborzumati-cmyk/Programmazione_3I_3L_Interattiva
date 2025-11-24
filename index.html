@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ Master: Funzioni & Memoria Avanzata</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --accent: #3b82f6;
+            --code-bg: #1e293b;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: #cbd5e1; }
+        .font-code { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Navigazione */
+        .nav-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        
+        /* Animazioni */
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .memory-cell { transition: all 0.5s ease; }
+        .pulse-change { animation: pulseGreen 1s; }
+        @keyframes pulseGreen { 0% { background-color: #22c55e; color: black; } 100% { background-color: transparent; color: inherit; } }
+
+        /* Syntax Highlight simulato */
+        .cpp-type { color: #c084fc; font-weight: bold; } /* viola */
+        .cpp-func { color: #60a5fa; } /* blu */
+        .cpp-var { color: #facc15; } /* giallo */
+        .cpp-num { color: #4ade80; } /* verde */
+        .cpp-comm { color: #94a3b8; font-style: italic; } /* grigio chiaro */
+        
+        .tooltip { position: relative; display: inline-block; border-bottom: 1px dotted #777; }
+        .tooltip .tooltiptext { visibility: hidden; width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 6px; padding: 5px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -100px; opacity: 0; transition: opacity 0.3s; font-size: 0.8rem; pointer-events: none;}
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur border-b border-slate-700 p-4">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+                <i class="fas fa-microchip mr-2"></i>C++ Memory Master
+            </h1>
+            <div class="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+                <button onclick="switchTab('intro')" class="nav-btn active px-4 py-2 rounded-lg border border-slate-700 text-sm font-bold transition hover:bg-slate-800 whitespace-nowrap">1. Anatomia Funzioni</button>
+                <button onclick="switchTab('scope')" class="nav-btn px-4 py-2 rounded-lg border border-slate-700 text-sm font-bold transition hover:bg-slate-800 whitespace-nowrap">2. Scope (Visibilità)</button>
+                <button onclick="switchTab('value')" class="nav-btn px-4 py-2 rounded-lg border border-slate-700 text-sm font-bold transition hover:bg-slate-800 whitespace-nowrap">3. Passaggio Valore</button>
+                <button onclick="switchTab('ref')" class="nav-btn px-4 py-2 rounded-lg border border-slate-700 text-sm font-bold transition hover:bg-slate-800 whitespace-nowrap text-red-400 border-red-900/50">4. Riferimenti (&)</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenuto Principale -->
+    <main class="flex-grow max-w-6xl mx-auto p-6 w-full">
+
+        <!-- TAB 1: FONDAMENTI -->
+        <section id="tab-intro" class="fade-in space-y-8">
+            <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
+                <h2 class="text-3xl font-bold text-white mb-4">Anatomia di una Funzione</h2>
+                <p class="text-slate-300 text-lg mb-6">
+                    Una funzione è un blocco di codice con un nome. Pensa a lei come a un "dipendente specializzato" che fa una cosa sola e la fa bene.
+                </p>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Codice Spiegato -->
+                    <div class="bg-[#0d1117] p-6 rounded-xl font-code text-sm border-l-4 border-blue-500 shadow-2xl">
+                        <div class="text-xs text-slate-500 mb-2 uppercase tracking-widest font-bold">Definizione della Funzione</div>
+                        
+                        <div class="mb-3">
+                            <span class="cpp-type tooltip">int<span class="tooltiptext">TIPO DI RITORNO: La funzione promette di restituire un numero intero.</span></span> 
+                            <span class="cpp-func tooltip">calcolaArea<span class="tooltiptext">NOME: Come chiamerai questa funzione nel main.</span></span>
+                            (<span class="cpp-type">int</span> <span class="cpp-var tooltip">base<span class="tooltiptext">PARAMETRO 1: Variabile locale creata quando la funzione parte.</span></span>, 
+                             <span class="cpp-type">int</span> <span class="cpp-var tooltip">altezza<span class="tooltiptext">PARAMETRO 2: Seconda variabile locale necessaria.</span></span>) 
+                        </div>
+                        <div class="pl-4 border-l border-slate-700 space-y-1">
+                            <span class="text-slate-500">{</span> <br>
+                            &nbsp;&nbsp;<span class="cpp-comm">// 1. Svolgimento del compito</span><br>
+                            &nbsp;&nbsp;<span class="cpp-type">int</span> <span class="cpp-var">area</span> = base * altezza;<br><br>
+                            &nbsp;&nbsp;<span class="cpp-comm">// 2. Restituzione del risultato</span><br>
+                            &nbsp;&nbsp;<span class="text-pink-400 font-bold">return</span> area;<br>
+                            <span class="text-slate-500">}</span>
+                        </div>
+                    </div>
+
+                    <!-- Spiegazione Dettagliata -->
+                    <div class="space-y-4">
+                        <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-600">
+                            <h3 class="font-bold text-blue-400 mb-1"><i class="fas fa-sign-out-alt mr-2"></i>1. Il Tipo di Ritorno (Output)</h3>
+                            <p class="text-sm text-slate-300">
+                                Dice cosa esce dalla scatola. Se è <code class="text-pink-400">void</code>, la funzione lavora ma non restituisce numeri o testi al main.
+                            </p>
+                        </div>
+                        <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-600">
+                            <h3 class="font-bold text-yellow-400 mb-1"><i class="fas fa-box-open mr-2"></i>2. I Parametri (Input)</h3>
+                            <p class="text-sm text-slate-300">
+                                Sono gli ingredienti necessari. Sono variabili <strong>LOCALI</strong>: nascono quando la funzione inizia e vengono distrutte quando finisce.
+                            </p>
+                        </div>
+                        <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-600">
+                            <h3 class="font-bold text-pink-400 mb-1"><i class="fas fa-undo mr-2"></i>3. Return</h3>
+                            <p class="text-sm text-slate-300">
+                                La parola chiave che ferma la funzione e "lancia" il risultato indietro a chi l'ha chiamata.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: SCOPE -->
+        <section id="tab-scope" class="hidden fade-in space-y-6">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <h2 class="text-2xl font-bold text-white mb-2">Scope: Dove vive una variabile?</h2>
+                <p class="text-slate-400 mb-6">Le variabili non sono eterne. Hanno un luogo di nascita e un momento di morte.</p>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Codice Scope -->
+                    <div class="bg-[#0d1117] p-5 rounded-lg font-code text-sm leading-relaxed border border-slate-700">
+                        <span class="cpp-type">int</span> <span class="text-green-400">punteggio</span> = <span class="cpp-num">100</span>; <span class="cpp-comm">// GLOBALE: Visibile ovunque</span><br><br>
+                        
+                        <span class="cpp-type">void</span> <span class="cpp-func">gioca</span>() {<br>
+                        &nbsp;&nbsp;<span class="cpp-type">int</span> <span class="text-yellow-400">nemici</span> = <span class="cpp-num">5</span>; <span class="cpp-comm">// LOCALE: Visibile solo qui</span><br>
+                        &nbsp;&nbsp;<span class="text-green-400">punteggio</span>++; <span class="cpp-comm">// OK: vedo la globale</span><br>
+                        &nbsp;&nbsp;<span class="cpp-comm">// vite = 3;  // ERRORE: 'vite' è nell'altra stanza!</span><br>
+                        }<br><br>
+
+                        <span class="cpp-type">int</span> <span class="cpp-func">main</span>() {<br>
+                        &nbsp;&nbsp;<span class="cpp-type">int</span> <span class="text-blue-400">vite</span> = <span class="cpp-num">3</span>; <span class="cpp-comm">// LOCALE del main</span><br>
+                        &nbsp;&nbsp;<span class="text-green-400">punteggio</span> = <span class="cpp-num">0</span>; <span class="cpp-comm">// OK</span><br>
+                        &nbsp;&nbsp;<span class="cpp-comm">// nemici = 0; // ERRORE: 'nemici' è morta o invisibile</span><br>
+                        }
+                    </div>
+
+                    <!-- Visualizzatore Grafico -->
+                    <div class="relative bg-slate-900 rounded-xl overflow-hidden border border-slate-600 p-4">
+                        <div class="absolute top-2 right-2 text-xs text-slate-500 font-bold uppercase">RAM Visualizer</div>
+                        
+                        <!-- Spazio Globale -->
+                        <div class="border-2 border-dashed border-green-500/30 rounded-lg p-4 mb-4 relative bg-green-900/10">
+                            <span class="bg-green-600 text-white text-xs px-2 py-0.5 rounded absolute -top-2 left-4">GLOBALE</span>
+                            <div class="flex items-center gap-2 mt-2">
+                                <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                                <span class="text-green-200 font-mono">punteggio (100)</span>
+                            </div>
+                            <p class="text-xs text-green-500/70 mt-1">Sempre attiva, occupa memoria per tutto il programma.</p>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <!-- Spazio Main -->
+                            <div class="flex-1 border-2 border-blue-500/30 rounded-lg p-3 bg-blue-900/10 relative">
+                                <span class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded absolute -top-2 left-2">SCOPE MAIN</span>
+                                <div class="font-mono text-blue-200 mt-2">vite (3)</div>
+                                <div class="mt-4 border-t border-blue-500/20 pt-2 text-[10px] text-blue-300">
+                                    <i class="fas fa-eye"></i> Vede: vite, punteggio<br>
+                                    <i class="fas fa-eye-slash text-red-400"></i> Non vede: nemici
+                                </div>
+                            </div>
+
+                            <!-- Spazio Funzione -->
+                            <div class="flex-1 border-2 border-yellow-500/30 rounded-lg p-3 bg-yellow-900/10 relative">
+                                <span class="bg-yellow-600 text-black text-xs px-2 py-0.5 rounded absolute -top-2 left-2">SCOPE GIOCA</span>
+                                <div class="font-mono text-yellow-200 mt-2">nemici (5)</div>
+                                <div class="mt-4 border-t border-yellow-500/20 pt-2 text-[10px] text-yellow-300">
+                                    <i class="fas fa-eye"></i> Vede: nemici, punteggio<br>
+                                    <i class="fas fa-eye-slash text-red-400"></i> Non vede: vite
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: PASSAGGIO PER VALORE -->
+        <section id="tab-value" class="hidden fade-in grid lg:grid-cols-2 gap-6">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <h2 class="text-xl font-bold text-white mb-2">Il Passaggio per Valore (Copia)</h2>
+                <p class="text-sm text-slate-300 mb-4">
+                    Quando passi una variabile senza simboli speciali, C++ fa una <strong>fotocopia</strong>. 
+                    La funzione colora sulla fotocopia, l'originale resta pulito.
+                </p>
+                <div class="font-code text-sm bg-[#0d1117] p-4 rounded border border-slate-600 leading-7" id="code-val">
+                    <div id="v-line-1"><span class="cpp-type">void</span> <span class="cpp-func">tentaScambio</span>(<span class="cpp-type">int</span> a, <span class="cpp-type">int</span> b) {</div>
+                    <div id="v-line-2" class="pl-4 cpp-comm">// 'a' e 'b' sono COPIE nate ora</div>
+                    <div id="v-line-3" class="pl-4"><span class="cpp-type">int</span> temp = a; a = b; b = temp;</div>
+                    <div id="v-line-4" class="pl-4 cpp-comm">// Qui dentro sono scambiati...</div>
+                    <div id="v-line-5">} <span class="cpp-comm">// Qui 'a' e 'b' muoiono!</span></div>
+                    <div id="v-line-6" class="mt-2"><span class="cpp-type">int</span> <span class="cpp-func">main</span>() {</div>
+                    <div id="v-line-7" class="pl-4"><span class="cpp-type">int</span> x = <span class="cpp-num">10</span>, y = <span class="cpp-num">20</span>;</div>
+                    <div id="v-line-8" class="pl-4"><span class="cpp-func">tentaScambio</span>(x, y);</div>
+                    <div id="v-line-9" class="pl-4">cout &lt;&lt; x &lt;&lt; <span class="text-green-300">" "</span> &lt;&lt; y; <span class="cpp-comm">// Stampa ancora 10 20!</span></div>
+                    <div id="v-line-10">}</div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="simValue.next()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold transition w-full shadow-lg shadow-blue-500/20">Esegui Passo Passo <i class="fas fa-arrow-right ml-2"></i></button>
+                    <button onclick="simValue.reset()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded font-bold transition"><i class="fas fa-undo"></i></button>
+                </div>
+                <div id="explainer-val" class="mt-4 text-blue-200 text-sm font-semibold bg-blue-900/20 p-3 rounded border border-blue-500/30 min-h-[60px] flex items-center">
+                    Premi "Esegui" per vedere come vengono create le copie.
+                </div>
+            </div>
+
+            <!-- Memory Visualization -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-700 relative overflow-hidden flex flex-col justify-end min-h-[400px]">
+                <div class="absolute top-0 right-0 bg-slate-800 text-xs px-3 py-1 rounded-bl text-slate-400 font-bold tracking-wider">STACK MEMORY</div>
+                <div id="stack-container-val" class="flex flex-col-reverse gap-3 w-full pb-4">
+                    <!-- Stack frames injected here -->
+                </div>
+                <div class="text-center text-slate-600 text-xs mt-2">Gli elementi vengono impilati (Stack)</div>
+            </div>
+        </section>
+
+        <!-- TAB 4: RIFERIMENTI -->
+        <section id="tab-ref" class="hidden fade-in grid lg:grid-cols-2 gap-6">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-red-900/50">
+                <h2 class="text-xl font-bold text-red-400 mb-2 flex items-center gap-2"><i class="fas fa-link"></i> Passaggio per Riferimento</h2>
+                <p class="text-sm text-slate-300 mb-4">
+                    Usando <code>&</code> (ampersand) vicino al tipo, dici: "Non copiarmi, dammi l'originale".<br>
+                    La funzione riceve un <strong>collegamento diretto</strong> alla memoria del main.
+                </p>
+                <div class="font-code text-sm bg-[#0d1117] p-4 rounded border border-red-900/30 leading-7" id="code-ref">
+                    <div id="r-line-1"><span class="cpp-type">void</span> <span class="cpp-func">scambioVero</span>(<span class="cpp-type">int</span> <span class="text-red-400 font-bold text-lg">&</span>a, <span class="cpp-type">int</span> <span class="text-red-400 font-bold text-lg">&</span>b) {</div>
+                    <div id="r-line-2" class="pl-4 cpp-comm">// a è un ALIAS di x (è la stessa scatola!)</div>
+                    <div id="r-line-3" class="pl-4"><span class="cpp-type">int</span> temp = a;</div>
+                    <div id="r-line-4" class="pl-4">a = b; <span class="cpp-comm">// Modifica x originale</span></div>
+                    <div id="r-line-5" class="pl-4">b = temp; <span class="cpp-comm">// Modifica y originale</span></div>
+                    <div id="r-line-6">}</div>
+                    <div id="r-line-7" class="mt-2"><span class="cpp-type">int</span> <span class="cpp-func">main</span>() {</div>
+                    <div id="r-line-8" class="pl-4"><span class="cpp-type">int</span> x = <span class="cpp-num">10</span>, y = <span class="cpp-num">20</span>;</div>
+                    <div id="r-line-9" class="pl-4"><span class="cpp-func">scambioVero</span>(x, y);</div>
+                    <div id="r-line-10" class="pl-4">cout &lt;&lt; x &lt;&lt; <span class="text-green-300">" "</span> &lt;&lt; y; <span class="cpp-comm">// Stampa 20 10!</span></div>
+                    <div id="r-line-11">}</div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="simRef.next()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded font-bold transition w-full shadow-lg shadow-red-900/20">Avanti (Reference) <i class="fas fa-forward ml-2"></i></button>
+                    <button onclick="simRef.reset()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded font-bold transition"><i class="fas fa-undo"></i></button>
+                </div>
+                <div id="explainer-ref" class="mt-4 text-red-200 text-sm font-semibold bg-red-900/20 p-3 rounded border border-red-500/30 min-h-[60px] flex items-center">
+                    Nota il simbolo '&'. Clicca Avanti.
+                </div>
+            </div>
+
+            <!-- Memory Visualization Reference -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-red-900/30 relative overflow-hidden flex flex-col justify-end min-h-[400px]">
+                <div class="absolute top-0 right-0 bg-red-900/30 text-xs px-3 py-1 rounded-bl text-red-300 font-bold">SHARED MEMORY LINK</div>
+                <div id="stack-container-ref" class="flex flex-col-reverse gap-4 w-full relative z-10 pb-4">
+                    <!-- Stack frames injected here -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- GESTIONE TAB ---
+        function switchTab(tabId) {
+            ['intro', 'scope', 'value', 'ref'].forEach(t => {
+                document.getElementById('tab-' + t).classList.add('hidden');
+            });
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            
+            // Update Buttons
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // --- UTILS PER LA GRAFICA ---
+        function highlightLine(prefix, num, colorClass = 'bg-slate-700') {
+            document.querySelectorAll(`[id^="${prefix}-line-"]`).forEach(el => el.className = '');
+            const el = document.getElementById(`${prefix}-line-${num}`);
+            if(el) el.className = `${colorClass} -mx-2 px-2 rounded transition border-l-2 border-white`;
+        }
+
+        function createFrame(containerId, id, title, vars, borderColor) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = `bg-slate-800 border-l-4 ${borderColor} p-3 rounded shadow-lg fade-in relative overflow-hidden`;
+            div.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">${title}</span>
+                </div>
+                <div class="space-y-2">
+                    ${vars.map(v => `
+                        <div class="flex justify-between items-center bg-black/40 p-2 rounded border border-white/5">
+                            <span class="${v.color} font-mono text-sm font-bold">${v.type} ${v.name}</span>
+                            <span id="${v.id}" class="text-white font-bold font-mono transition-all duration-300 ${v.extraClass || ''}">${v.val}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        // --- SIMULAZIONE 1: PASSAGGIO PER VALORE ---
+        const simValue = {
+            step: 0,
+            next: function() {
+                this.step++;
+                const explainer = document.getElementById('explainer-val');
+                const container = document.getElementById('stack-container-val');
+
+                switch(this.step) {
+                    case 1:
+                        highlightLine('v', 7);
+                        container.innerHTML = '';
+                        createFrame('stack-container-val', 'frame-v-main', 'MAIN SCOPE', [
+                            {type:'int', name:'x', val:'10', id:'v-x', color:'text-blue-400'},
+                            {type:'int', name:'y', val:'20', id:'v-y', color:'text-blue-400'}
+                        ], 'border-blue-500');
+                        explainer.innerHTML = "Il Main inizia. In memoria abbiamo x=10 e y=20.";
+                        break;
+                    case 2:
+                        highlightLine('v', 8);
+                        explainer.innerHTML = "Chiamata a <code>tentaScambio(x,y)</code>. I valori 10 e 20 vengono presi per essere copiati.";
+                        break;
+                    case 3:
+                        highlightLine('v', 1);
+                        createFrame('stack-container-val', 'frame-v-func', 'FUNZIONE tentaScambio', [
+                            {type:'int', name:'a', val:'10', id:'v-a', color:'text-yellow-400'},
+                            {type:'int', name:'b', val:'20', id:'v-b', color:'text-yellow-400'},
+                            {type:'int', name:'temp', val:'?', id:'v-temp', color:'text-slate-500'}
+                        ], 'border-yellow-500');
+                        explainer.innerHTML = "<strong>Nuova Area di Memoria!</strong> Sono nate le variabili 'a' e 'b'. Hanno gli stessi valori, ma sono scatole diverse.";
+                        break;
+                    case 4:
+                        highlightLine('v', 3);
+                        document.getElementById('v-temp').innerText = '10';
+                        document.getElementById('v-a').innerText = '20';
+                        document.getElementById('v-a').classList.add('pulse-change');
+                        document.getElementById('v-b').innerText = '10';
+                        document.getElementById('v-b').classList.add('pulse-change');
+                        explainer.innerHTML = "Lo scambio avviene! Ma guarda bene: è successo solo nel riquadro giallo (Funzione). Il Main (blu) è invariato.";
+                        break;
+                    case 5:
+                        highlightLine('v', 5);
+                        explainer.innerHTML = "La funzione termina. Il suo riquadro (giallo) sta per essere distrutto.";
+                        break;
+                    case 6:
+                        highlightLine('v', 9);
+                        const frame = document.getElementById('frame-v-func');
+                        frame.style.opacity = '0';
+                        frame.style.transform = 'translateX(100px) scale(0.9)';
+                        setTimeout(() => frame.remove(), 600);
+                        explainer.innerHTML = "Siamo tornati al Main. x è ancora 10, y è ancora 20. Lo scambio è fallito perché abbiamo lavorato sulla copia.";
+                        break;
+                }
+            },
+            reset: function() {
+                this.step = 0;
+                document.getElementById('stack-container-val').innerHTML = '';
+                highlightLine('v', 0); // Clear highlight
+                document.getElementById('explainer-val').innerText = "Premi 'Esegui' per vedere come vengono create le copie.";
+            }
+        };
+
+        // --- SIMULAZIONE 2: PASSAGGIO PER RIFERIMENTO ---
+        const simRef = {
+            step: 0,
+            next: function() {
+                this.step++;
+                const explainer = document.getElementById('explainer-ref');
+                const container = document.getElementById('stack-container-ref');
+
+                switch(this.step) {
+                    case 1:
+                        highlightLine('r', 8);
+                        container.innerHTML = '';
+                        createFrame('stack-container-ref', 'frame-r-main', 'MAIN SCOPE', [
+                            {type:'int', name:'x', val:'10', id:'r-x', color:'text-blue-400'},
+                            {type:'int', name:'y', val:'20', id:'r-y', color:'text-blue-400'}
+                        ], 'border-blue-500');
+                        explainer.innerHTML = "Main allocato. x=10, y=20. Questa volta useremo indirizzi.";
+                        break;
+                    case 2:
+                        highlightLine('r', 9);
+                        explainer.innerHTML = "Chiamata con Referenza (&). Non copiamo i valori, passiamo il 'telecomando' per modificare x e y.";
+                        break;
+                    case 3:
+                        highlightLine('r', 1);
+                        createFrame('stack-container-ref', 'frame-r-func', 'FUNZIONE scambioVero', [
+                            {type:'int &', name:'a', val:'⟷ [Main: x]', id:'r-a', color:'text-red-400', extraClass:'text-xs tracking-tighter'},
+                            {type:'int &', name:'b', val:'⟷ [Main: y]', id:'r-b', color:'text-red-400', extraClass:'text-xs tracking-tighter'},
+                            {type:'int', name:'temp', val:'?', id:'r-temp', color:'text-slate-500'}
+                        ], 'border-red-500');
+                        explainer.innerHTML = "I parametri 'a' e 'b' non contengono numeri, ma sono <strong>collegamenti (Link)</strong> alle variabili del Main.";
+                        break;
+                    case 4: // int temp = a
+                        highlightLine('r', 3);
+                        document.getElementById('r-temp').innerText = '10';
+                        explainer.innerHTML = "temp legge 'a'. Siccome 'a' è collegato a 'x', legge 10.";
+                        break;
+                    case 5: // a = b
+                        highlightLine('r', 4);
+                        // Update Visual: 'a' points to 'x', so 'x' changes
+                        const rx = document.getElementById('r-x');
+                        rx.innerText = '20';
+                        rx.classList.add('pulse-change');
+                        explainer.innerHTML = "<strong class='text-red-400'>EFFETTO DIRETTO:</strong> Scrivendo su 'a', modifichiamo istantaneamente 'x' nel Main!";
+                        break;
+                    case 6: // b = temp
+                        highlightLine('r', 5);
+                        const ry = document.getElementById('r-y');
+                        ry.innerText = '10';
+                        ry.classList.add('pulse-change');
+                        explainer.innerHTML = "Scrivendo su 'b', modifichiamo istantaneamente 'y'.";
+                        break;
+                    case 7:
+                        highlightLine('r', 10);
+                        const frame = document.getElementById('frame-r-func');
+                        frame.style.opacity = '0';
+                        frame.style.transform = 'translateX(100px) scale(0.9)';
+                        setTimeout(() => frame.remove(), 600);
+                        explainer.innerHTML = "Funzione chiusa. Ma il risultato rimane! x e y sono permanentemente invertiti.";
+                        break;
+                }
+            },
+            reset: function() {
+                this.step = 0;
+                document.getElementById('stack-container-ref').innerHTML = '';
+                highlightLine('r', 0);
+                document.getElementById('explainer-ref').innerText = "Simulazione Reference resettata.";
+            }
+        };
+
+    </script>
+</body>
+</html>
