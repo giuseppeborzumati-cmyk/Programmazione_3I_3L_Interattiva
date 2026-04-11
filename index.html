@@ -3,432 +3,500 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C++ Master: Funzioni & Memoria Avanzata</title>
+    <title>Generatore Verifiche C++ - Prof. Giuseppe Borzumati</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        :root {
-            --bg-dark: #0f172a;
-            --accent: #3b82f6;
-            --code-bg: #1e293b;
+        /* Nasconde il contenitore al layout della pagina ma lo lascia renderizzabile per PDF */
+        #pdf-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -9999;
+            opacity: 0.001; 
+            pointer-events: none;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: #cbd5e1; }
-        .font-code { font-family: 'JetBrains Mono', monospace; }
-        
-        /* Navigazione */
-        .nav-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
-        
-        /* Animazioni */
-        .fade-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .memory-cell { transition: all 0.5s ease; }
-        .pulse-change { animation: pulseGreen 1s; }
-        @keyframes pulseGreen { 0% { background-color: #22c55e; color: black; } 100% { background-color: transparent; color: inherit; } }
 
-        /* Syntax Highlight simulato */
-        .cpp-type { color: #c084fc; font-weight: bold; } /* viola */
-        .cpp-func { color: #60a5fa; } /* blu */
-        .cpp-var { color: #facc15; } /* giallo */
-        .cpp-num { color: #4ade80; } /* verde */
-        .cpp-comm { color: #94a3b8; font-style: italic; } /* grigio chiaro */
+        #hiddenPdfContainer {
+            width: 180mm; /* A4 width meno margini */
+            background: white;
+            box-sizing: border-box;
+            color: #1a202c; 
+        }
+
+        /* Stili avanzati per la stampa PDF a colori */
+        .pdf-page {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: black;
+            padding: 0px;
+            font-size: 11pt;
+            line-height: 1.4;
+            width: 100%;
+            box-sizing: border-box;
+            overflow-wrap: break-word;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
         
-        .tooltip { position: relative; display: inline-block; border-bottom: 1px dotted #777; }
-        .tooltip .tooltiptext { visibility: hidden; width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 6px; padding: 5px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -100px; opacity: 0; transition: opacity 0.3s; font-size: 0.8rem; pointer-events: none;}
-        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+        .pdf-header-container {
+            border: 2px solid #0f172a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f8fafc;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .pdf-header {
+            text-align: center;
+            font-weight: 900;
+            color: #0f172a;
+            font-size: 16pt;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .pdf-subheader {
+            text-align: center;
+            font-style: italic;
+            font-size: 10.5pt;
+            color: #334155;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .student-info {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 12pt;
+            margin-bottom: 5px;
+            color: #0f172a;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            color: white;
+            background-color: #0f172a;
+            padding: 6px 12px;
+            border-radius: 4px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            font-size: 12pt;
+        }
+        
+        .question-block {
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            background-color: #f8fafc;
+            padding: 10px;
+            border-left: 4px solid #94a3b8;
+            border-radius: 0 6px 6px 0;
+            font-size: 10.5pt;
+        }
+        
+        .points {
+            float: right;
+            font-weight: bold;
+            color: #f8fafc;
+            background: #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 9pt;
+        }
+        
+        table.grading-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 10pt;
+            table-layout: fixed;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            border: 2px solid #0f172a;
+        }
+        table.grading-table th {
+            background-color: #0f172a;
+            color: white;
+            padding: 6px;
+        }
+        table.grading-table td {
+            border: 1px solid #94a3b8;
+            padding: 4px;
+            text-align: center;
+            font-weight: bold;
+            background-color: #f8fafc;
+        }
+        
+        .lines {
+            border-bottom: 1px dashed #94a3b8;
+            height: 25px;
+            width: 100%;
+            margin-top: 5px;
+        }
+        .code-box {
+            border: 2px solid #cbd5e1;
+            min-height: 180px;
+            margin-top: 8px;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #ffffff;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            width: 100%;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            border-radius: 6px;
+        }
+        .page-break {
+            page-break-before: always;
+            break-before: page;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="bg-gradient-to-br from-slate-100 to-slate-200 min-h-screen font-sans text-slate-800">
 
-    <!-- Navbar -->
-    <nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur border-b border-slate-700 p-4">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-                <i class="fas fa-microchip mr-2"></i>C++ Memory Master
-            </h1>
-            <div class="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
-                <button onclick="switchTab('intro')" class="nav-btn active px-4 py-2 rounded-lg border border-slate-700 text-sm font-bold transition hover:bg-slate-800 whitespace-nowrap">1. Anatomia Funzioni</button>
-                <button onclick="switchTab('scope')" class="nav-btn px-4 py-2 rounded-lg border border-slate-700 text-sm font-bold transition hover:bg-slate-800 whitespace-nowrap">2. Scope (Visibilità)</button>
-                <button onclick="switchTab('value')" class="nav-btn px-4 py-2 rounded-lg border border-slate-700 text-sm font-bold transition hover:bg-slate-800 whitespace-nowrap">3. Passaggio Valore</button>
-                <button onclick="switchTab('ref')" class="nav-btn px-4 py-2 rounded-lg border border-slate-700 text-sm font-bold transition hover:bg-slate-800 whitespace-nowrap text-red-400 border-red-900/50">4. Riferimenti (&)</button>
+    <div class="max-w-5xl mx-auto p-8 mt-10 bg-white rounded-2xl shadow-2xl border-t-8 border-slate-800">
+        <div class="flex items-center gap-6 border-b pb-6 mb-8">
+            <div class="p-4 bg-slate-800 rounded-xl text-white shadow-lg">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Generatore Verifiche AI - C++</h1>
+                <p class="text-lg text-slate-600 font-medium mt-1">Liceo Scientifico - Prof. Giuseppe Borzumati</p>
             </div>
         </div>
-    </nav>
 
-    <!-- Contenuto Principale -->
-    <main class="flex-grow max-w-6xl mx-auto p-6 w-full">
+        <div class="bg-blue-50 p-5 rounded-xl border border-blue-200 mb-8 text-sm text-blue-900 shadow-inner">
+            <h3 class="font-bold text-lg mb-2 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Modalità Operativa Attiva
+            </h3>
+            <p>Generazione di test complessi (Base 100) sui costrutti C++ (Variabili, <code>if-else</code>, <code>switch</code>, <code>for</code>, <code>while</code>, <code>do-while</code>). <strong>Java è severamente escluso.</strong> Le domande sono progettate per essere critiche e insidiose. Il layout PDF include griglie di valutazione dettagliate e la tabella di conversione voti esatta (Sistema Infallibile).</p>
+        </div>
 
-        <!-- TAB 1: FONDAMENTI -->
-        <section id="tab-intro" class="fade-in space-y-8">
-            <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
-                <h2 class="text-3xl font-bold text-white mb-4">Anatomia di una Funzione</h2>
-                <p class="text-slate-300 text-lg mb-6">
-                    Una funzione è un blocco di codice con un nome. Pensa a lei come a un "dipendente specializzato" che fa una cosa sola e la fa bene.
-                </p>
-                
-                <div class="grid md:grid-cols-2 gap-8">
-                    <!-- Codice Spiegato -->
-                    <div class="bg-[#0d1117] p-6 rounded-xl font-code text-sm border-l-4 border-blue-500 shadow-2xl">
-                        <div class="text-xs text-slate-500 mb-2 uppercase tracking-widest font-bold">Definizione della Funzione</div>
-                        
-                        <div class="mb-3">
-                            <span class="cpp-type tooltip">int<span class="tooltiptext">TIPO DI RITORNO: La funzione promette di restituire un numero intero.</span></span> 
-                            <span class="cpp-func tooltip">calcolaArea<span class="tooltiptext">NOME: Come chiamerai questa funzione nel main.</span></span>
-                            (<span class="cpp-type">int</span> <span class="cpp-var tooltip">base<span class="tooltiptext">PARAMETRO 1: Variabile locale creata quando la funzione parte.</span></span>, 
-                             <span class="cpp-type">int</span> <span class="cpp-var tooltip">altezza<span class="tooltiptext">PARAMETRO 2: Seconda variabile locale necessaria.</span></span>) 
-                        </div>
-                        <div class="pl-4 border-l border-slate-700 space-y-1">
-                            <span class="text-slate-500">{</span> <br>
-                            &nbsp;&nbsp;<span class="cpp-comm">// 1. Svolgimento del compito</span><br>
-                            &nbsp;&nbsp;<span class="cpp-type">int</span> <span class="cpp-var">area</span> = base * altezza;<br><br>
-                            &nbsp;&nbsp;<span class="cpp-comm">// 2. Restituzione del risultato</span><br>
-                            &nbsp;&nbsp;<span class="text-pink-400 font-bold">return</span> area;<br>
-                            <span class="text-slate-500">}</span>
-                        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                <label class="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider">Numero di Verifiche</label>
+                <input type="number" id="numTests" min="1" value="3" class="w-full px-5 py-4 border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-slate-500/20 focus:border-slate-800 outline-none transition text-xl font-bold">
+                <p class="text-xs text-slate-500 mt-3 font-medium">Nessun limite. Il sistema genera le verifiche a lotti per le classi numerose.</p>
+            </div>
+            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                <label class="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider">Classe di Destinazione</label>
+                <input type="text" id="className" placeholder="Es. 2I o 2L" value="2I" class="w-full px-5 py-4 border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-slate-500/20 focus:border-slate-800 outline-none transition text-xl font-bold">
+                <p class="text-xs text-slate-500 mt-3 font-medium">Verrà stampato nell'intestazione di ogni PDF.</p>
+            </div>
+        </div>
+
+        <button id="generateBtn" onclick="startGeneration()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-5 px-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex justify-center items-center gap-3 text-xl uppercase tracking-wide">
+            <svg class="w-7 h-7 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            Elabora Verifiche AI e Scarica ZIP
+        </button>
+
+        <div id="statusArea" class="mt-8 hidden">
+            <div class="bg-white border-2 border-slate-300 rounded-2xl p-8 shadow-lg">
+                <div class="flex items-center gap-5 mb-5">
+                    <div class="relative">
+                        <div class="w-10 h-10 border-4 border-slate-200 rounded-full"></div>
+                        <div class="w-10 h-10 border-4 border-slate-800 rounded-full border-t-transparent animate-spin absolute top-0 left-0"></div>
                     </div>
-
-                    <!-- Spiegazione Dettagliata -->
-                    <div class="space-y-4">
-                        <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-600">
-                            <h3 class="font-bold text-blue-400 mb-1"><i class="fas fa-sign-out-alt mr-2"></i>1. Il Tipo di Ritorno (Output)</h3>
-                            <p class="text-sm text-slate-300">
-                                Dice cosa esce dalla scatola. Se è <code class="text-pink-400">void</code>, la funzione lavora ma non restituisce numeri o testi al main.
-                            </p>
-                        </div>
-                        <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-600">
-                            <h3 class="font-bold text-yellow-400 mb-1"><i class="fas fa-box-open mr-2"></i>2. I Parametri (Input)</h3>
-                            <p class="text-sm text-slate-300">
-                                Sono gli ingredienti necessari. Sono variabili <strong>LOCALI</strong>: nascono quando la funzione inizia e vengono distrutte quando finisce.
-                            </p>
-                        </div>
-                        <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-600">
-                            <h3 class="font-bold text-pink-400 mb-1"><i class="fas fa-undo mr-2"></i>3. Return</h3>
-                            <p class="text-sm text-slate-300">
-                                La parola chiave che ferma la funzione e "lancia" il risultato indietro a chi l'ha chiamata.
-                            </p>
-                        </div>
+                    <span id="statusText" class="font-bold text-slate-800 text-xl tracking-tight">Avvio motori IA...</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-5 overflow-hidden border border-slate-300 shadow-inner">
+                    <div id="progressBar" class="bg-slate-800 h-full rounded-full transition-all duration-300 relative overflow-hidden" style="width: 0%">
+                        <div class="absolute top-0 left-0 bottom-0 right-0 bg-white/20 animate-pulse"></div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </div>
 
-        <!-- TAB 2: SCOPE -->
-        <section id="tab-scope" class="hidden fade-in space-y-6">
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <h2 class="text-2xl font-bold text-white mb-2">Scope: Dove vive una variabile?</h2>
-                <p class="text-slate-400 mb-6">Le variabili non sono eterne. Hanno un luogo di nascita e un momento di morte.</p>
-
-                <div class="grid lg:grid-cols-2 gap-8">
-                    <!-- Codice Scope -->
-                    <div class="bg-[#0d1117] p-5 rounded-lg font-code text-sm leading-relaxed border border-slate-700">
-                        <span class="cpp-type">int</span> <span class="text-green-400">punteggio</span> = <span class="cpp-num">100</span>; <span class="cpp-comm">// GLOBALE: Visibile ovunque</span><br><br>
-                        
-                        <span class="cpp-type">void</span> <span class="cpp-func">gioca</span>() {<br>
-                        &nbsp;&nbsp;<span class="cpp-type">int</span> <span class="text-yellow-400">nemici</span> = <span class="cpp-num">5</span>; <span class="cpp-comm">// LOCALE: Visibile solo qui</span><br>
-                        &nbsp;&nbsp;<span class="text-green-400">punteggio</span>++; <span class="cpp-comm">// OK: vedo la globale</span><br>
-                        &nbsp;&nbsp;<span class="cpp-comm">// vite = 3;  // ERRORE: 'vite' è nell'altra stanza!</span><br>
-                        }<br><br>
-
-                        <span class="cpp-type">int</span> <span class="cpp-func">main</span>() {<br>
-                        &nbsp;&nbsp;<span class="cpp-type">int</span> <span class="text-blue-400">vite</span> = <span class="cpp-num">3</span>; <span class="cpp-comm">// LOCALE del main</span><br>
-                        &nbsp;&nbsp;<span class="text-green-400">punteggio</span> = <span class="cpp-num">0</span>; <span class="cpp-comm">// OK</span><br>
-                        &nbsp;&nbsp;<span class="cpp-comm">// nemici = 0; // ERRORE: 'nemici' è morta o invisibile</span><br>
-                        }
-                    </div>
-
-                    <!-- Visualizzatore Grafico -->
-                    <div class="relative bg-slate-900 rounded-xl overflow-hidden border border-slate-600 p-4">
-                        <div class="absolute top-2 right-2 text-xs text-slate-500 font-bold uppercase">RAM Visualizer</div>
-                        
-                        <!-- Spazio Globale -->
-                        <div class="border-2 border-dashed border-green-500/30 rounded-lg p-4 mb-4 relative bg-green-900/10">
-                            <span class="bg-green-600 text-white text-xs px-2 py-0.5 rounded absolute -top-2 left-4">GLOBALE</span>
-                            <div class="flex items-center gap-2 mt-2">
-                                <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                                <span class="text-green-200 font-mono">punteggio (100)</span>
-                            </div>
-                            <p class="text-xs text-green-500/70 mt-1">Sempre attiva, occupa memoria per tutto il programma.</p>
-                        </div>
-
-                        <div class="flex gap-4">
-                            <!-- Spazio Main -->
-                            <div class="flex-1 border-2 border-blue-500/30 rounded-lg p-3 bg-blue-900/10 relative">
-                                <span class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded absolute -top-2 left-2">SCOPE MAIN</span>
-                                <div class="font-mono text-blue-200 mt-2">vite (3)</div>
-                                <div class="mt-4 border-t border-blue-500/20 pt-2 text-[10px] text-blue-300">
-                                    <i class="fas fa-eye"></i> Vede: vite, punteggio<br>
-                                    <i class="fas fa-eye-slash text-red-400"></i> Non vede: nemici
-                                </div>
-                            </div>
-
-                            <!-- Spazio Funzione -->
-                            <div class="flex-1 border-2 border-yellow-500/30 rounded-lg p-3 bg-yellow-900/10 relative">
-                                <span class="bg-yellow-600 text-black text-xs px-2 py-0.5 rounded absolute -top-2 left-2">SCOPE GIOCA</span>
-                                <div class="font-mono text-yellow-200 mt-2">nemici (5)</div>
-                                <div class="mt-4 border-t border-yellow-500/20 pt-2 text-[10px] text-yellow-300">
-                                    <i class="fas fa-eye"></i> Vede: nemici, punteggio<br>
-                                    <i class="fas fa-eye-slash text-red-400"></i> Non vede: vite
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 3: PASSAGGIO PER VALORE -->
-        <section id="tab-value" class="hidden fade-in grid lg:grid-cols-2 gap-6">
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <h2 class="text-xl font-bold text-white mb-2">Il Passaggio per Valore (Copia)</h2>
-                <p class="text-sm text-slate-300 mb-4">
-                    Quando passi una variabile senza simboli speciali, C++ fa una <strong>fotocopia</strong>. 
-                    La funzione colora sulla fotocopia, l'originale resta pulito.
-                </p>
-                <div class="font-code text-sm bg-[#0d1117] p-4 rounded border border-slate-600 leading-7" id="code-val">
-                    <div id="v-line-1"><span class="cpp-type">void</span> <span class="cpp-func">tentaScambio</span>(<span class="cpp-type">int</span> a, <span class="cpp-type">int</span> b) {</div>
-                    <div id="v-line-2" class="pl-4 cpp-comm">// 'a' e 'b' sono COPIE nate ora</div>
-                    <div id="v-line-3" class="pl-4"><span class="cpp-type">int</span> temp = a; a = b; b = temp;</div>
-                    <div id="v-line-4" class="pl-4 cpp-comm">// Qui dentro sono scambiati...</div>
-                    <div id="v-line-5">} <span class="cpp-comm">// Qui 'a' e 'b' muoiono!</span></div>
-                    <div id="v-line-6" class="mt-2"><span class="cpp-type">int</span> <span class="cpp-func">main</span>() {</div>
-                    <div id="v-line-7" class="pl-4"><span class="cpp-type">int</span> x = <span class="cpp-num">10</span>, y = <span class="cpp-num">20</span>;</div>
-                    <div id="v-line-8" class="pl-4"><span class="cpp-func">tentaScambio</span>(x, y);</div>
-                    <div id="v-line-9" class="pl-4">cout &lt;&lt; x &lt;&lt; <span class="text-green-300">" "</span> &lt;&lt; y; <span class="cpp-comm">// Stampa ancora 10 20!</span></div>
-                    <div id="v-line-10">}</div>
-                </div>
-                <div class="mt-4 flex gap-2">
-                    <button onclick="simValue.next()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold transition w-full shadow-lg shadow-blue-500/20">Esegui Passo Passo <i class="fas fa-arrow-right ml-2"></i></button>
-                    <button onclick="simValue.reset()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded font-bold transition"><i class="fas fa-undo"></i></button>
-                </div>
-                <div id="explainer-val" class="mt-4 text-blue-200 text-sm font-semibold bg-blue-900/20 p-3 rounded border border-blue-500/30 min-h-[60px] flex items-center">
-                    Premi "Esegui" per vedere come vengono create le copie.
-                </div>
-            </div>
-
-            <!-- Memory Visualization -->
-            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-700 relative overflow-hidden flex flex-col justify-end min-h-[400px]">
-                <div class="absolute top-0 right-0 bg-slate-800 text-xs px-3 py-1 rounded-bl text-slate-400 font-bold tracking-wider">STACK MEMORY</div>
-                <div id="stack-container-val" class="flex flex-col-reverse gap-3 w-full pb-4">
-                    <!-- Stack frames injected here -->
-                </div>
-                <div class="text-center text-slate-600 text-xs mt-2">Gli elementi vengono impilati (Stack)</div>
-            </div>
-        </section>
-
-        <!-- TAB 4: RIFERIMENTI -->
-        <section id="tab-ref" class="hidden fade-in grid lg:grid-cols-2 gap-6">
-            <div class="bg-slate-800 p-6 rounded-2xl border border-red-900/50">
-                <h2 class="text-xl font-bold text-red-400 mb-2 flex items-center gap-2"><i class="fas fa-link"></i> Passaggio per Riferimento</h2>
-                <p class="text-sm text-slate-300 mb-4">
-                    Usando <code>&</code> (ampersand) vicino al tipo, dici: "Non copiarmi, dammi l'originale".<br>
-                    La funzione riceve un <strong>collegamento diretto</strong> alla memoria del main.
-                </p>
-                <div class="font-code text-sm bg-[#0d1117] p-4 rounded border border-red-900/30 leading-7" id="code-ref">
-                    <div id="r-line-1"><span class="cpp-type">void</span> <span class="cpp-func">scambioVero</span>(<span class="cpp-type">int</span> <span class="text-red-400 font-bold text-lg">&</span>a, <span class="cpp-type">int</span> <span class="text-red-400 font-bold text-lg">&</span>b) {</div>
-                    <div id="r-line-2" class="pl-4 cpp-comm">// a è un ALIAS di x (è la stessa scatola!)</div>
-                    <div id="r-line-3" class="pl-4"><span class="cpp-type">int</span> temp = a;</div>
-                    <div id="r-line-4" class="pl-4">a = b; <span class="cpp-comm">// Modifica x originale</span></div>
-                    <div id="r-line-5" class="pl-4">b = temp; <span class="cpp-comm">// Modifica y originale</span></div>
-                    <div id="r-line-6">}</div>
-                    <div id="r-line-7" class="mt-2"><span class="cpp-type">int</span> <span class="cpp-func">main</span>() {</div>
-                    <div id="r-line-8" class="pl-4"><span class="cpp-type">int</span> x = <span class="cpp-num">10</span>, y = <span class="cpp-num">20</span>;</div>
-                    <div id="r-line-9" class="pl-4"><span class="cpp-func">scambioVero</span>(x, y);</div>
-                    <div id="r-line-10" class="pl-4">cout &lt;&lt; x &lt;&lt; <span class="text-green-300">" "</span> &lt;&lt; y; <span class="cpp-comm">// Stampa 20 10!</span></div>
-                    <div id="r-line-11">}</div>
-                </div>
-                <div class="mt-4 flex gap-2">
-                    <button onclick="simRef.next()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded font-bold transition w-full shadow-lg shadow-red-900/20">Avanti (Reference) <i class="fas fa-forward ml-2"></i></button>
-                    <button onclick="simRef.reset()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded font-bold transition"><i class="fas fa-undo"></i></button>
-                </div>
-                <div id="explainer-ref" class="mt-4 text-red-200 text-sm font-semibold bg-red-900/20 p-3 rounded border border-red-500/30 min-h-[60px] flex items-center">
-                    Nota il simbolo '&'. Clicca Avanti.
-                </div>
-            </div>
-
-            <!-- Memory Visualization Reference -->
-            <div class="bg-slate-900 p-6 rounded-2xl border border-red-900/30 relative overflow-hidden flex flex-col justify-end min-h-[400px]">
-                <div class="absolute top-0 right-0 bg-red-900/30 text-xs px-3 py-1 rounded-bl text-red-300 font-bold">SHARED MEMORY LINK</div>
-                <div id="stack-container-ref" class="flex flex-col-reverse gap-4 w-full relative z-10 pb-4">
-                    <!-- Stack frames injected here -->
-                </div>
-            </div>
-        </section>
-
-    </main>
+    <!-- Container fuori schermo inserito in un wrapper sicuro -->
+    <div id="pdf-wrapper">
+        <div id="hiddenPdfContainer"></div>
+    </div>
 
     <script>
-        // --- GESTIONE TAB ---
-        function switchTab(tabId) {
-            ['intro', 'scope', 'value', 'ref'].forEach(t => {
-                document.getElementById('tab-' + t).classList.add('hidden');
-            });
-            document.getElementById('tab-' + tabId).classList.remove('hidden');
+        const apiKey = "AIzaSyAiBWRktB21R-pTasn1TuQ5fJJqghptCHU"; 
+        
+        const sourceMaterial = `
+        ARGOMENTI ESCLUSIVI: Programmazione Strutturata in C++. IDE, Compilatore, editor di testo. 
+        VARIABILI E COSTANTI. I/O (cin, cout).
+        REGOLE IDENTIFICATORI: Iniziano con lettera o underscore. Mai con numero. Niente spazi/caratteri speciali. C++ è Case Sensitive.
+        COSTRUTTI SELEZIONE: 'if', 'else if', 'else'. Utilizzo di operatori logici (&&, ||, !) e relazionali (==, !=, <, >, <=, >=). Costrutto 'switch' con 'case' e 'break'.
+        COSTRUTTI ITERAZIONE (CICLI): 
+        - 'while': controllo in testa, può non eseguire mai le istruzioni se condizione subito falsa.
+        - 'do-while': controllo in coda, esegue ALMENO UNA VOLTA le istruzioni perché controlla alla fine.
+        - 'for': inizializzazione, condizione, incremento definiti in un'unica riga, ideale per cicli a conteggio noto.
+        REGOLA FONDAMENTALE: Nessun riferimento a Java. Java non fa parte di questa verifica.
+        `;
+
+        const systemPrompt = `Sei il Prof. Giuseppe Borzumati, docente molto esigente di Informatica in un Liceo Scientifico. 
+IL TUO COMPITO: Genera {N} verifiche TOTALMENTE DIVERSE L'UNA DALL'ALTRA sulla Programmazione C++.
+REGOLA ASSOLUTA 1: IGNORA JAVA. Non menzionare mai Java, classi, o OOP. Solo programmazione strutturata C++.
+REGOLA ASSOLUTA 2: Difficoltà MOLTO ALTA. Le domande devono essere lunghe, articolate, e progettate per trarre in inganno gli studenti disattenti (es. doppie negazioni, differenze di una sola parola tra le opzioni, omissione intenzionale di un 'non').
+
+Totale Punti: 100. Base 100.
+
+STRUTTURA DI OGNI VERIFICA (Max 4 Pagine):
+1. "true_false": 5 domande (2pt cad. = 10pt). Affermazioni teoretiche lunghe (almeno 3-4 righe) molto insidiose sui cicli, sugli if o sugli identificatori.
+2. "multiple_choice": 4 domande (5pt cad. = 20pt). Testi critici e lunghi. Le 4 opzioni di risposta devono essere quasi identiche tra loro, differendo per dettagli minimi (es. un simbolo < invece di <=, o la parola "testa" invece di "coda").
+3. "completion": 1 testo articolato sulla teoria con 4 concetti/parole chiave mancanti (2.5pt cad = 10pt).
+4. "open_ended": 1 domanda aperta complessa (10pt). Richiede un ragionamento critico e teorico su architetture software (es. "Analizza criticamente le differenze strutturali tra for e while, ipotizzando uno scenario in cui l'uso del do-while porterebbe a un bug fatale").
+5. "exercises": 2 Esercizi Pratici Corposi (25pt cad. = 50pt totali). 
+   - La traccia deve essere lunga e richiedere l'uso incrociato di SELEZIONE (if/switch) e ITERAZIONE (for/while/do-while).
+   - IMPORTANTISSIMO: L'esercizio deve essere corredato da teoria. Devi inserire il campo "theory_request" dove chiedi esplicitamente allo studente di commentare il codice riga per riga e giustificare teoricamente la scelta del ciclo/selezione.
+
+Restituisci ESCLUSIVAMENTE un oggetto JSON con questa struttura esatta, senza formattazioni markdown:
+{
+  "tests": [
+    {
+      "id": 1,
+      "true_false": [ { "q": "Affermazione complessa...", "correct": "V" } ],
+      "multiple_choice": [ { "q": "Domanda...", "options": ["A lunga", "B lunga", "C lunga", "D lunga"], "correct": "A lunga" } ],
+      "completion": { "text": "Testo con _1_ e _2_...", "words": ["parola1", "parola2"] },
+      "open_ended": [ { "q": "Domanda aperta", "answer": "Soluzione attesa" } ],
+      "exercises": [ 
+        { 
+          "title": "Titolo Es", 
+          "trace": "Traccia complessa e articolata in cui si richiede logica e cicli...", 
+          "theory_request": "Analisi teorica: giustifica la scelta del costrutto e commenta le righe critiche.",
+          "solution_code": "codice C++", 
+          "solution_explanation": "spiegazione" 
+        } 
+      ]
+    }
+  ]
+}`;
+
+        async function fetchGeminiData(numTests) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const prompt = systemPrompt.replace('{N}', numTests) + "\n\nCONTESTO DIDATTICO DA RIELABORARE IN MODO CRITICO:\n" + sourceMaterial;
             
-            // Update Buttons
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            let retries = 5;
+            let delay = 1000;
+            
+            while (retries > 0) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: { responseMimeType: "application/json" }
+                        })
+                    });
+
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const data = await response.json();
+                    return JSON.parse(data.candidates[0].content.parts[0].text);
+                } catch (error) {
+                    console.error("Errore API", error);
+                    retries--;
+                    if (retries === 0) throw new Error("Generazione fallita dopo multipli tentativi.");
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+            }
         }
 
-        // --- UTILS PER LA GRAFICA ---
-        function highlightLine(prefix, num, colorClass = 'bg-slate-700') {
-            document.querySelectorAll(`[id^="${prefix}-line-"]`).forEach(el => el.className = '');
-            const el = document.getElementById(`${prefix}-line-${num}`);
-            if(el) el.className = `${colorClass} -mx-2 px-2 rounded transition border-l-2 border-white`;
-        }
-
-        function createFrame(containerId, id, title, vars, borderColor) {
-            const container = document.getElementById(containerId);
-            const div = document.createElement('div');
-            div.id = id;
-            div.className = `bg-slate-800 border-l-4 ${borderColor} p-3 rounded shadow-lg fade-in relative overflow-hidden`;
-            div.innerHTML = `
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">${title}</span>
+        function buildHTMLTemplate(testData, className, testIndex, isSolution = false) {
+            let html = `<div class="pdf-page">`;
+            
+            html += `
+                <div class="pdf-header-container">
+                    <div class="pdf-header">VERIFICA DI INFORMATICA - C++</div>
+                    <div class="pdf-subheader">"Il codice è l'alfabeto del futuro - L'unico limite è la tua logica"</div>
+                    <div class="pdf-subheader" style="color: #0f172a; margin-bottom:0; text-transform: uppercase;">PROF. GIUSEPPE BORZUMATI</div>
                 </div>
-                <div class="space-y-2">
-                    ${vars.map(v => `
-                        <div class="flex justify-between items-center bg-black/40 p-2 rounded border border-white/5">
-                            <span class="${v.color} font-mono text-sm font-bold">${v.type} ${v.name}</span>
-                            <span id="${v.id}" class="text-white font-bold font-mono transition-all duration-300 ${v.extraClass || ''}">${v.val}</span>
-                        </div>
-                    `).join('')}
+                <div class="student-info">
+                    <span>NOME e COGNOME: _____________________________</span>
+                    <span>CLASSE: <span style="color:#b91c1c">${className}</span></span>
+                </div>
+                <div class="student-info" style="margin-bottom: 20px;">
+                    <span>DATA: ___________________</span>
+                    <span>ID TEST: #${testIndex} ${isSolution ? '<span style="color:#b91c1c; background:#fef08a; padding:3px 8px; border: 1px solid red; border-radius:3px;">[ GRIGLIA SOLUZIONI DOCENTE ]</span>' : ''}</span>
                 </div>
             `;
-            container.appendChild(div);
+
+            // 1. VERO / FALSO (10pt)
+            html += `<div class="section-title">SEZIONE I: Analisi Critica - Vero o Falso (10 Punti) <span class="points">2pt cad.</span></div>`;
+            html += `<div style="font-size:9pt; margin-bottom:10px; font-style:italic;">Leggi attentamente: le differenze possono risiedere in singole negazioni o dettagli architetturali.</div>`;
+            html += `<table style="width:100%; margin-bottom:15px; border-collapse:collapse;">`;
+            testData.true_false.forEach((tf, i) => {
+                html += `<tr>
+                    <td style="padding:8px 4px; border-bottom:1px solid #cbd5e1; width:85%; text-align:justify;"><strong>1.${i+1}</strong> ${tf.q}</td>
+                    <td style="padding:8px 4px; border-bottom:1px solid #cbd5e1; text-align:right; font-size:12pt;">
+                        [ ${isSolution && tf.correct==='V' ? '<span style="color:#b91c1c; font-weight:900">V</span>' : 'V'} ] 
+                        [ ${isSolution && tf.correct==='F' ? '<span style="color:#b91c1c; font-weight:900">F</span>' : 'F'} ]
+                    </td>
+                </tr>`;
+            });
+            html += `</table>`;
+
+            // 2. Risposta Multipla (20pt)
+            html += `<div class="section-title">SEZIONE II: Scelta Multipla Complessa (20 Punti) <span class="points">5pt cad.</span></div>`;
+            testData.multiple_choice.forEach((mc, i) => {
+                html += `<div class="question-block" style="text-align:justify;"><strong>2.${i+1}</strong> ${mc.q}<br><div style="margin-top:8px;">`;
+                mc.options.forEach((opt) => {
+                    let isCorrect = isSolution && opt === mc.correct;
+                    let style = isCorrect ? 'color:#b91c1c; font-weight:bold; background-color:#fee2e2; display:block; padding:4px; border-radius:3px; margin-bottom:3px;' : 'display:block; padding:4px; margin-bottom:3px;';
+                    html += `<div style="${style}">○ ${opt}</div>`;
+                });
+                html += `</div></div>`;
+            });
+
+            // 3. Completamento (10pt)
+            html += `<div class="section-title">SEZIONE III: Completamento Architetturale (10 Punti) <span class="points">2.5pt cad.</span></div>`;
+            let compText = testData.completion.text;
+            if (isSolution) {
+                testData.completion.words.forEach((word, i) => { compText = compText.replace(`_${i+1}_`, `<u style="color:#b91c1c; font-weight:900; background:#fee2e2; padding:0 3px;">${word}</u>`); });
+            } else {
+                testData.completion.words.forEach((word, i) => { compText = compText.replace(`_${i+1}_`, `<span style="display:inline-block; width:120px; border-bottom:1px solid black;"></span>`); });
+            }
+            html += `<div class="question-block" style="text-align:justify; line-height:1.6;">${compText}</div>`;
+
+            // 4. Domanda Aperta (10pt)
+            html += `<div class="section-title">SEZIONE IV: Trattazione Teorica Aperta (10 Punti)</div>`;
+            testData.open_ended.forEach((oe) => {
+                html += `<div class="question-block"><strong>TRACCIA:</strong> ${oe.q}`;
+                if (isSolution) {
+                    html += `<div style="color:#b91c1c; margin-top:10px; border-left:3px solid #b91c1c; padding-left:10px; background:#fff1f2; padding-top:5px; padding-bottom:5px;"><em>Descrittore / Soluzione Attesa:</em><br>${oe.answer}</div>`;
+                } else {
+                    for(let j=0; j<6; j++) html += `<div class="lines"></div>`;
+                }
+                html += `</div>`;
+            });
+
+            // 5. Esercizi Pratici (50pt)
+            html += `<div class="page-break"></div>`;
+            html += `<div class="pdf-header-container" style="padding:10px; background-color:#e2e8f0; border-color:#334155;"><div class="pdf-header" style="color:#0f172a;">SEZIONE LABORATORIO C++ (50 Punti)</div><div class="pdf-subheader" style="margin-bottom:0;">Logica, Algoritmi e Commento del Codice</div></div>`;
+            
+            testData.exercises.forEach((ex, i) => {
+                html += `<div class="section-title">Esercizio Pratico ${i+1}: ${ex.title} (25 Punti)</div>`;
+                html += `<div class="question-block" style="background-color:#eff6ff; border-left-color:#2563eb; text-align:justify;"><strong>TRACCIA OPERATIVA:</strong><br>${ex.trace}</div>`;
+                html += `<div class="question-block" style="background-color:#fff7ed; border-left-color:#ea580c; font-style:italic; text-align:justify;"><strong>RICHIESTA TEORICA SUL CODICE:</strong><br>${ex.theory_request}</div>`;
+                
+                if (isSolution) {
+                    html += `<strong>Griglia di Correzione - Codice C++ Atteso:</strong><div class="code-box" style="color:#b91c1c; border-color:#fca5a5; background:#fef2f2;">${ex.solution_code}</div>`;
+                    html += `<strong style="margin-top:10px; display:block;">Descrittore - Risposta Teorica Attesa:</strong><div class="code-box" style="color:#b91c1c; min-height:80px; border-color:#fca5a5; background:#fef2f2;">${ex.solution_explanation}</div>`;
+                } else {
+                    html += `<strong>Sviluppo Codice Sorgente (C++):</strong><div class="code-box" style="min-height:300px;"></div>`;
+                    html += `<strong style="margin-top:15px; display:block;">Spiegazione Teorica e Commento:</strong><div class="code-box" style="min-height:150px;"></div>`;
+                }
+                if (i === 0) html += `<div class="page-break"></div>`; // Mette il secondo esercizio in una nuova pagina per avere spazio
+            });
+
+            // Tabella di Conversione Esatta Infallibile
+            html += `
+                <div style="margin-top: 40px; page-break-inside: avoid;">
+                    <div class="section-title" style="text-align:center; background-color:#0f172a; padding:10px;">Tabella di Conversione Punteggio Universale</div>
+                    <table class="grading-table">
+                        <tr><th>INDICATORI VOTO (Punti <i>p</i>)</th><th>VOTO</th><th>INDICATORI VOTO (Punti <i>p</i>)</th><th>VOTO</th></tr>
+                        <tr><td>Da 0 &le; p &lt; 3,60</td><td>3</td><td>Da 6,70 &le; p &lt; 7,60</td><td>7</td></tr>
+                        <tr><td>Da 3,70 &le; p &lt; 4,60</td><td>4</td><td>Da 7,70 &le; p &lt; 8,60</td><td>8</td></tr>
+                        <tr><td>Da 4,70 &le; p &lt; 5,60</td><td>5</td><td>Da 8,70 &le; p &lt; 9,60</td><td>9</td></tr>
+                        <tr><td>Da 5,70 &le; p &lt; 6,60</td><td>6</td><td>Da 9,70 &le; p &le; 10</td><td>10</td></tr>
+                    </table>
+                    <div style="text-align:center; font-size:9pt; margin-top:8px; color:#475569; font-weight:bold;">N.B. Punteggio Base 100. Dividere per 10 per ottenere il valore "p". La conversione è da considerarsi insindacabile.</div>
+                </div>
+            `;
+
+            html += `</div>`;
+            return html;
         }
 
-        // --- SIMULAZIONE 1: PASSAGGIO PER VALORE ---
-        const simValue = {
-            step: 0,
-            next: function() {
-                this.step++;
-                const explainer = document.getElementById('explainer-val');
-                const container = document.getElementById('stack-container-val');
+        async function updateStatus(text, progress) {
+            document.getElementById('statusText').innerText = text;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
 
-                switch(this.step) {
-                    case 1:
-                        highlightLine('v', 7);
-                        container.innerHTML = '';
-                        createFrame('stack-container-val', 'frame-v-main', 'MAIN SCOPE', [
-                            {type:'int', name:'x', val:'10', id:'v-x', color:'text-blue-400'},
-                            {type:'int', name:'y', val:'20', id:'v-y', color:'text-blue-400'}
-                        ], 'border-blue-500');
-                        explainer.innerHTML = "Il Main inizia. In memoria abbiamo x=10 e y=20.";
-                        break;
-                    case 2:
-                        highlightLine('v', 8);
-                        explainer.innerHTML = "Chiamata a <code>tentaScambio(x,y)</code>. I valori 10 e 20 vengono presi per essere copiati.";
-                        break;
-                    case 3:
-                        highlightLine('v', 1);
-                        createFrame('stack-container-val', 'frame-v-func', 'FUNZIONE tentaScambio', [
-                            {type:'int', name:'a', val:'10', id:'v-a', color:'text-yellow-400'},
-                            {type:'int', name:'b', val:'20', id:'v-b', color:'text-yellow-400'},
-                            {type:'int', name:'temp', val:'?', id:'v-temp', color:'text-slate-500'}
-                        ], 'border-yellow-500');
-                        explainer.innerHTML = "<strong>Nuova Area di Memoria!</strong> Sono nate le variabili 'a' e 'b'. Hanno gli stessi valori, ma sono scatole diverse.";
-                        break;
-                    case 4:
-                        highlightLine('v', 3);
-                        document.getElementById('v-temp').innerText = '10';
-                        document.getElementById('v-a').innerText = '20';
-                        document.getElementById('v-a').classList.add('pulse-change');
-                        document.getElementById('v-b').innerText = '10';
-                        document.getElementById('v-b').classList.add('pulse-change');
-                        explainer.innerHTML = "Lo scambio avviene! Ma guarda bene: è successo solo nel riquadro giallo (Funzione). Il Main (blu) è invariato.";
-                        break;
-                    case 5:
-                        highlightLine('v', 5);
-                        explainer.innerHTML = "La funzione termina. Il suo riquadro (giallo) sta per essere distrutto.";
-                        break;
-                    case 6:
-                        highlightLine('v', 9);
-                        const frame = document.getElementById('frame-v-func');
-                        frame.style.opacity = '0';
-                        frame.style.transform = 'translateX(100px) scale(0.9)';
-                        setTimeout(() => frame.remove(), 600);
-                        explainer.innerHTML = "Siamo tornati al Main. x è ancora 10, y è ancora 20. Lo scambio è fallito perché abbiamo lavorato sulla copia.";
-                        break;
-                }
-            },
-            reset: function() {
-                this.step = 0;
-                document.getElementById('stack-container-val').innerHTML = '';
-                highlightLine('v', 0); // Clear highlight
-                document.getElementById('explainer-val').innerText = "Premi 'Esegui' per vedere come vengono create le copie.";
+        async function startGeneration() {
+            const btn = document.getElementById('generateBtn');
+            const statusArea = document.getElementById('statusArea');
+            const numTestsInput = parseInt(document.getElementById('numTests').value);
+            const className = document.getElementById('className').value || 'Classe';
+
+            if (isNaN(numTestsInput) || numTestsInput < 1) {
+                alert("Inserisci un numero valido di verifiche da generare.");
+                return;
             }
-        };
 
-        // --- SIMULAZIONE 2: PASSAGGIO PER RIFERIMENTO ---
-        const simRef = {
-            step: 0,
-            next: function() {
-                this.step++;
-                const explainer = document.getElementById('explainer-ref');
-                const container = document.getElementById('stack-container-ref');
-
-                switch(this.step) {
-                    case 1:
-                        highlightLine('r', 8);
-                        container.innerHTML = '';
-                        createFrame('stack-container-ref', 'frame-r-main', 'MAIN SCOPE', [
-                            {type:'int', name:'x', val:'10', id:'r-x', color:'text-blue-400'},
-                            {type:'int', name:'y', val:'20', id:'r-y', color:'text-blue-400'}
-                        ], 'border-blue-500');
-                        explainer.innerHTML = "Main allocato. x=10, y=20. Questa volta useremo indirizzi.";
-                        break;
-                    case 2:
-                        highlightLine('r', 9);
-                        explainer.innerHTML = "Chiamata con Referenza (&). Non copiamo i valori, passiamo il 'telecomando' per modificare x e y.";
-                        break;
-                    case 3:
-                        highlightLine('r', 1);
-                        createFrame('stack-container-ref', 'frame-r-func', 'FUNZIONE scambioVero', [
-                            {type:'int &', name:'a', val:'⟷ [Main: x]', id:'r-a', color:'text-red-400', extraClass:'text-xs tracking-tighter'},
-                            {type:'int &', name:'b', val:'⟷ [Main: y]', id:'r-b', color:'text-red-400', extraClass:'text-xs tracking-tighter'},
-                            {type:'int', name:'temp', val:'?', id:'r-temp', color:'text-slate-500'}
-                        ], 'border-red-500');
-                        explainer.innerHTML = "I parametri 'a' e 'b' non contengono numeri, ma sono <strong>collegamenti (Link)</strong> alle variabili del Main.";
-                        break;
-                    case 4: // int temp = a
-                        highlightLine('r', 3);
-                        document.getElementById('r-temp').innerText = '10';
-                        explainer.innerHTML = "temp legge 'a'. Siccome 'a' è collegato a 'x', legge 10.";
-                        break;
-                    case 5: // a = b
-                        highlightLine('r', 4);
-                        // Update Visual: 'a' points to 'x', so 'x' changes
-                        const rx = document.getElementById('r-x');
-                        rx.innerText = '20';
-                        rx.classList.add('pulse-change');
-                        explainer.innerHTML = "<strong class='text-red-400'>EFFETTO DIRETTO:</strong> Scrivendo su 'a', modifichiamo istantaneamente 'x' nel Main!";
-                        break;
-                    case 6: // b = temp
-                        highlightLine('r', 5);
-                        const ry = document.getElementById('r-y');
-                        ry.innerText = '10';
-                        ry.classList.add('pulse-change');
-                        explainer.innerHTML = "Scrivendo su 'b', modifichiamo istantaneamente 'y'.";
-                        break;
-                    case 7:
-                        highlightLine('r', 10);
-                        const frame = document.getElementById('frame-r-func');
-                        frame.style.opacity = '0';
-                        frame.style.transform = 'translateX(100px) scale(0.9)';
-                        setTimeout(() => frame.remove(), 600);
-                        explainer.innerHTML = "Funzione chiusa. Ma il risultato rimane! x e y sono permanentemente invertiti.";
-                        break;
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            statusArea.classList.remove('hidden');
+            
+            try {
+                await updateStatus("Fase 1: Connessione all'IA e Progettazione Tracce...", 10);
+                let allTests = [];
+                const batchSize = 2; // Lotti piccoli per via dell'alta complessità richiesta
+                let remaining = numTestsInput;
+                
+                while(remaining > 0) {
+                    let toGenerate = Math.min(remaining, batchSize);
+                    let result = await fetchGeminiData(toGenerate);
+                    if(result && result.tests) allTests = allTests.concat(result.tests);
+                    remaining -= toGenerate;
+                    let prog = 10 + ((numTestsInput - remaining) / numTestsInput) * 30;
+                    await updateStatus(`Elaborazione IA: Verifica ${allTests.length} di ${numTestsInput}...`, prog);
                 }
-            },
-            reset: function() {
-                this.step = 0;
-                document.getElementById('stack-container-ref').innerHTML = '';
-                highlightLine('r', 0);
-                document.getElementById('explainer-ref').innerText = "Simulazione Reference resettata.";
-            }
-        };
 
+                await updateStatus("Fase 2: Compilazione Grafica e Rendering PDF A4...", 50);
+                const zip = new JSZip();
+                const studentFolder = zip.folder("1_Verifiche_Studenti");
+                const solutionFolder = zip.folder("2_Griglie_Correzione_Prof");
+                const pdfContainer = document.getElementById('hiddenPdfContainer');
+                
+                const opt = {
+                    margin:       [12, 12, 15, 12], // Margini ottimali per A4 (Top, Left, Bottom, Right) in mm
+                    filename:     'temp.pdf',
+                    image:        { type: 'jpeg', quality: 1.0 },
+                    html2canvas:  { scale: 2, letterRendering: true, useCORS: true, logging: false },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak:    { mode: ['css', 'legacy'], avoid: ['.question-block', '.code-box', 'table', '.section-title', '.pdf-header-container'] }
+                };
+
+                for (let i = 0; i < allTests.length; i++) {
+                    await updateStatus(`Stampa Digitale: PDF ${i+1} di ${allTests.length}...`, 50 + ((i+1)/allTests.length)*40);
+                    const test = allTests[i];
+                    
+                    pdfContainer.innerHTML = buildHTMLTemplate(test, className, i+1, false);
+                    await new Promise(r => setTimeout(r, 600)); 
+                    let studentPdfBlob = await html2pdf().set(opt).from(pdfContainer).output('blob');
+                    studentFolder.file(`Verifica_C++_${className}_ID${i+1}_STUDENTI.pdf`, studentPdfBlob);
+                    
+                    pdfContainer.innerHTML = buildHTMLTemplate(test, className, i+1, true);
+                    await new Promise(r => setTimeout(r, 600)); 
+                    let solutionPdfBlob = await html2pdf().set(opt).from(pdfContainer).output('blob');
+                    solutionFolder.file(`Soluzioni_C++_${className}_ID${i+1}_DOCENTE.pdf`, solutionPdfBlob);
+                    
+                    pdfContainer.innerHTML = '';
+                }
+
+                await updateStatus("Fase 3: Compressione File ZIP...", 95);
+                const zipBlob = await zip.generateAsync({type:"blob"});
+                saveAs(zipBlob, `Verifiche_Borzumati_C++_${className}.zip`);
+                await updateStatus("Download completato! Controlla i tuoi file.", 100);
+
+            } catch (error) {
+                alert("Errore critico durante l'elaborazione: " + error.message);
+                statusArea.classList.add('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                setTimeout(() => {
+                    if (document.getElementById('progressBar').style.width === '100%') {
+                        statusArea.classList.add('hidden');
+                        document.getElementById('progressBar').style.width = '0%';
+                    }
+                }, 4000);
+            }
+        }
     </script>
 </body>
 </html>
